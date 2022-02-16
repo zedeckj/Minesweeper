@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Javascript</title>
+	</head>
+	<body>
+		
+		<canvas id="Canvas" width="800" height="600" style="background: #000"></canvas>
+		<script>
+		//<body oncontextmenu="return false;">
+		var canvas = document.getElementById("Canvas");
+		document.getElementsByTagName("body")[0].oncontextmenu = function(e){ e.preventDefault();}
+		var ctx = canvas.getContext("2d");
+		ctx.imageSmoothingEnabled = false;
+		var width = 40;
+		var height = 28;
+		var bombs = 300;
+		var flags = bombs;
+		var clockDigits = ["O","O","O","O"];
+		var gameOver = false;
+		var gameWon = false;
+
+		var date = new Date();
+		var origTime = date.getSeconds() + (60*date.getMinutes()) + (3600*date.getHours());
+
+		var images = {};
+		//Gallery: https://postimg.cc/gallery/w9w0yil6/d699e8a7/
+		images["RFF"] = new Image(20, 20);
+		images["RFF"].src = "https://i.postimg.cc/rwRdCzDf/wrong-Flag-dark.png";
+		images["FF"] = new Image(20, 20);
+		images["FF"].src = "https://i.postimg.cc/wBdcBCn8/flagging-7.png";
+		images["F"] = new Image(20, 20);
+		images["F"].src = "https://i.postimg.cc/wBdcBCn8/flagging-7.png";
+		images["X"] = new Image(20, 20);
+		images["X"].src = "https://i.postimg.cc/kgPtNxsW/bomb.png";
+		images["H"] = new Image(20, 20);
+		images["H"].src = "https://i.postimg.cc/ThMh96VT/hidden.png";
+		images["0"] = new Image(20, 20);
+		images["0"].src = "https://i.postimg.cc/d3TLr1TW/empty.png";
+		images["1"] = new Image(20, 20);
+		images["1"].src = "https://i.postimg.cc/C12RRDdB/one.png";
+		images["2"] = new Image(20, 20);
+		images["2"].src = "https://i.postimg.cc/gJjwc4cb/two.png";
+		images["3"] = new Image(20, 20);
+		images["3"].src = "https://i.postimg.cc/Jh1DvM9n/three.png";
+		images["4"] = new Image(20, 20);
+		images["4"].src = "https://i.postimg.cc/rFrrth18/four.png";
+		images["5"] = new Image(20, 20);
+		images["5"].src = "https://i.postimg.cc/PfcDJG83/five.png";
+		images["6"] = new Image(20, 20);
+		images["6"].src = "https://i.postimg.cc/nhK93CSg/six.png";
+		images["7"] = new Image(20, 20);
+		images["7"].src = "https://i.postimg.cc/BbdPVD09/seven.png";
+		images["8"] = new Image(20, 20);
+		images["8"].src = "https://i.postimg.cc/KjKgffCD/eight.png";
+		images["9"] = new Image(20, 20);
+		images["9"].src = "https://i.postimg.cc/FzQbS0XN/nine.png";
+		images[":"] = new Image(20,20);
+		images[":"].src = "https://i.postimg.cc/K8KdJygj/colon.png"; 
+		images["O"] = new Image(20,20);
+		images["O"].src = "https://i.postimg.cc/2y06YBmC/zero.png";
+		images["DF"] = new Image(20,20);
+		images["DF"].src = "https://i.postimg.cc/3NQhzNNK/darkFlag.png";
+		images["."] = new Image(20,20);
+		images["."].src = "https://i.postimg.cc/SNL3NVT7/x.png";
+
+		images["B1"] = new Image(20, 20);
+		images["B1"].src = "https://i.postimg.cc/HLHXmQ7T/breaking-1.png";
+		images["B2"] = new Image(20, 20);
+		images["B2"].src = "https://i.postimg.cc/Mp1VgsHs/breaking-2.png";
+		images["B3"] = new Image(20, 20);
+		images["B3"].src = "https://i.postimg.cc/hjtmzcrw/breaking-3.png";
+		images["B4"] = new Image(20, 20);
+		images["B4"].src = "https://i.postimg.cc/zfjWGVnK/breaking-4.png";
+		images["B5"] = new Image(20, 20);
+		images["B5"].src = "https://i.postimg.cc/TYzn78dL/breaking-5.png";
+		images["B6"] = new Image(20, 20);
+		images["B6"].src = "https://i.postimg.cc/m2zQyZsW/breaking-6.png";
+
+		images["F1"] = new Image(20, 20);
+		images["F1"].src = "https://i.postimg.cc/RCb7t62T/flagging-1.png";
+		images["F2"] = new Image(20, 20);
+		images["F2"].src = "https://i.postimg.cc/SR5cb3cP/flagging-2.png";
+		images["F3"] = new Image(20, 20);
+		images["F3"].src = "https://i.postimg.cc/vBYrrWQ0/flagging-3.png";
+		images["F4"] = new Image(20, 20);
+		images["F4"].src = "https://i.postimg.cc/1tvpJfXs/flagging-4.png";
+		images["F5"] = new Image(20, 20);
+		images["F5"].src = "https://i.postimg.cc/fykYFDSX/flagging-5.png";
+		images["F6"] = new Image(20, 20);
+		images["F6"].src = "https://i.postimg.cc/R0Q1JPz3/flagging-6.png";
+		images["F7"] = new Image(20, 20);
+		images["F7"].src = "https://i.postimg.cc/wBdcBCn8/flagging-7.png";
+
+		images["D7"] = new Image(20, 20);
+		images["D7"].src = "https://i.postimg.cc/RCb7t62T/flagging-1.png";
+		images["D6"] = new Image(20, 20);
+		images["D6"].src = "https://i.postimg.cc/SR5cb3cP/flagging-2.png";
+		images["D5"] = new Image(20, 20);
+		images["D5"].src = "https://i.postimg.cc/vBYrrWQ0/flagging-3.png";
+		images["D4"] = new Image(20, 20);
+		images["D4"].src = "https://i.postimg.cc/1tvpJfXs/flagging-4.png";
+		images["D3"] = new Image(20, 20);
+		images["D3"].src = "https://i.postimg.cc/fykYFDSX/flagging-5.png";
+		images["D2"] = new Image(20, 20);
+		images["D2"].src = "https://i.postimg.cc/R0Q1JPz3/flagging-6.png";
+		images["D1"] = new Image(20, 20);
+		images["D1"].src = "https://i.postimg.cc/wBdcBCn8/flagging-7.png";
+
+		images["GF1"] = new Image(20, 20);
+		images["GF1"].src = "https://i.postimg.cc/R0Q1JPz3/flagging-6.png";
+		images["GF2"] = new Image(20, 20);
+		images["GF2"].src = "https://i.postimg.cc/fykYFDSX/flagging-5.png";
+		images["GF3"] = new Image(20, 20);
+		images["GF3"].src = "https://i.postimg.cc/1tvpJfXs/flagging-4.png";
+		images["GF4"] = new Image(20, 20);
+		images["GF4"].src = "https://i.postimg.cc/vBYrrWQ0/flagging-3.png";
+		images["GF5"] = new Image(20, 20);
+		images["GF5"].src = "https://i.postimg.cc/fWFvmxLG/flagging-1g.png";
+		images["GF6"] = new Image(20, 20);
+		images["GF6"].src = "https://i.postimg.cc/Hk14Pdb3/flagging-2g.png";
+		images["GF7"] = new Image(20, 20);
+		images["GF7"].src = "https://i.postimg.cc/GpqF2DVS/flagging-3g.png";
+		images["GF8"] = new Image(20, 20);
+		images["GF8"].src = "https://i.postimg.cc/rmH5Gk81/flagging-4g.png";
+
+		images["title"] = new Image(800,40);
+		images["title"].src = "https://i.postimg.cc/c4rckMfj/title.png";
+		images["mute"] = new Image(40,40);
+		images["mute"].src = "https://i.postimg.cc/pr1JXpMq/mute.png";
+		images["sound"] = new Image(40,40);
+		images["sound"].src = "https://i.postimg.cc/xjsRPFNM/sound.png";
+		images["restart"] = new Image(40,40);
+		images["restart"].src = "https://i.postimg.cc/wTfwSR4g/restart.png";
+
+		var sounds = {};
+		sounds["flag"] = "flagRaise.mp3";
+
+		var tileClicked = false;
+		var tileFlagged = false;
+		var yClick = -1;
+		var xClick = -1;
+
+		var mouseDown = false;
+		var mouseX = 0;
+		var mouseY = 0;
+		
+		var mapCreated = false;
+
+		var bombMap = makeFalseMap();
+		var baseMap = makeBaseMap();
+		var openMap = makeOpenMap();
+		var breakingMap = makeZeroMap();
+		var flaggingMap = makeZeroMap();
+		var deflaggingMap = makeZeroMap();
+		var clickedMap = makeFalseMap();
+		var greenflaggingMap = makeZeroMap();
+
+		var rM = new Array(0);
+
+		canvas.addEventListener("mousemove", moveCanvas);
+		canvas.addEventListener("keydown",keyPush);
+		canvas.addEventListener("click", clickCanvas);
+		canvas.addEventListener("contextmenu", rightClickCanvas);
+		canvas.addEventListener("mousedown", downCanvas);
+		canvas.addEventListener("mouseup", upCanvas);
+		canvas.addEventListener("mouseout", upCanvas);
+		
+
+		setInterval(render,1000/30);
+
+		var muted = false;
+		
+		function render(){
+			ctx.fillStyle = "black";
+			ctx.fillRect(0,0,canvas.width,canvas.height);
+			drawImage("title",0,0);
+			drawImage("restart",760,0);
+			drawMenu();
+			renderMap();
+			
+			renderClickedMap();
+			update();
+			animate();
+		}
+
+		function update(){
+			var openRevealed = false;
+			if (mouseDown){
+				mouseIsDown();
+			}
+			if (tileClicked){
+				if (openMap[yClick][xClick]=="H"&&!gameOver){
+					if (!mapCreated){
+						bombMap = makeBombMap(yClick,xClick);
+						baseMap = makeBaseMap();
+						recheckFlags();
+						mapCreated = true;
+					}
+					openRevealed = revealBlock(yClick,xClick);
+				}
+				tileClicked = false;
+			}
+			if (tileFlagged){
+				if (openMap[yClick][xClick]=="H"&&flags>0&&!gameOver){
+					if (baseMap[yClick][xClick]=="X"){
+						openMap[yClick][xClick] = "F"
+					}
+					else {
+						openMap[yClick][xClick] = "FF"
+						console.log("false flag");
+					}
+					flaggingMap[yClick][xClick] = 1;
+					flags--;
+					//playSound("flag");
+				}
+				else if (openMap[yClick][xClick] == "F"||openMap[yClick][xClick] == "FF"){
+					openMap[yClick][xClick] = "H"
+					deflaggingMap[yClick][xClick] = 1;
+					flags++;
+					//playSound("flag");
+				}
+				tileFlagged = false;
+			}
+			if (openRevealed){
+				for (i=0;i<20;i++){
+					for (y=0;y<height;y++){
+						for (x=0;x<width;x++){
+							if (openMap[y][x]==0){
+								revealSurrounding(y,x);
+							}
+						}
+					}
+				}
+			}
+			if (!gameOver&&!gameWon){
+				makeClock();
+			}
+			if (flags==0&&!gameWon){
+				console.log("0 flags");
+				checkIfGameWon();
+			}
+		}
+
+		function renderMap(){
+			for (y=0; y<height; y++){
+				for (x=0; x<width; x++){
+					drawTile(openMap[y][x],x,y);
+				}
+			}
+		}
+
+		function animate(){
+			renderFlaggingMap();
+			renderBreakingMap();
+			renderDeflaggingMap();
+			renderGreenflaggingMap();
+
+			updateBreakingMap();
+			updateFlaggingMap();
+			updateDeflaggingMap();
+			updateGreenflaggingMap();
+		}
+
+		function renderClickedMap(){
+			for (y=0; y<height; y++){
+				for (x=0; x<width; x++){
+					if (clickedMap[y][x]){
+						drawTile("0",x,y);
+						drawTile("B1",x,y);
+					}
+				}
+			}
+		}
+
+		function checkIfGameWon(){
+			gameWon = true;
+			for (y=0; y<height; y++){
+				for (x=0; x<width; x++){
+					if (openMap[y][x]=="FF"||openMap[y][x]=="X"||openMap[y][x]=="H"){
+						gameWon = false;
+					}
+				}
+			}
+			if (gameWon){
+				console.log("play sequence");
+				gameWonSequence();
+			}
+		}
+
+		function renderGreenflaggingMap(){
+			for (y=0; y<height; y++){
+				for (x=0; x<width; x++){
+					if (greenflaggingMap[y][x]!=0){
+						drawTile("GF"+greenflaggingMap[y][x],x,y);
+					}
+				}
+			}
+		}
+
+		function renderFlaggingMap(){
+			for (y=0; y<height; y++){
+				for (x=0; x<width; x++){
+					if (flaggingMap[y][x]!=0){
+						drawTile("F"+flaggingMap[y][x],x,y);
+					}
+				}
+			}
+		}
+
+		function renderDeflaggingMap(){
+			for (y=0; y<height; y++){
+				for (x=0; x<width; x++){
+					if (deflaggingMap[y][x]!=0){
+						drawTile("D"+deflaggingMap[y][x],x,y);
+					}
+				}
+			}
+		}
+
+		function renderBreakingMap(){
+			for (y=0; y<height; y++){
+				for (x=0; x<width; x++){
+					if (breakingMap[y][x]>0){
+						drawTile("B"+breakingMap[y][x],x,y);
+					}
+				}
+			}
+		}
+
+		function updateFlaggingMap(){
+			for (y=0; y<height; y++){
+				for (x=0; x<width; x++){
+					if (flaggingMap[y][x]==7){
+						flaggingMap[y][x]=0;
+					}
+					else if (flaggingMap[y][x]!=0){
+						flaggingMap[y][x]++;
+					}
+				}
+			}
+		}	
+
+		function updateGreenflaggingMap(){
+			for (y=0; y<height; y++){
+				for (x=0; x<width; x++){
+					if (greenflaggingMap[y][x]>0&&greenflaggingMap[y][x]<8){
+						greenflaggingMap[y][x]++;
+					}
+				}
+			}
+		}	
+
+		function updateDeflaggingMap(){
+			for (y=0; y<height; y++){
+				for (x=0; x<width; x++){
+					if (deflaggingMap[y][x]==7){
+						deflaggingMap[y][x]=0;
+					}
+					else if (deflaggingMap[y][x]!=0){
+						deflaggingMap[y][x]++;
+					}
+				}
+			}
+		}	
+
+		function updateBreakingMap(){
+			for (y=0; y<height; y++){
+				for (x=0; x<width; x++){
+					if (breakingMap[y][x]==6){
+						breakingMap[y][x]=0;
+					}
+					else if (breakingMap[y][x]!=0){
+						breakingMap[y][x]++;
+					}
+					if (breakingMap[y][x] == -1){
+						breakingMap[y][x] = 1;
+						revealBlockEnd(y,x);
+					}
+				}
+			}
+		}		
+
+		function makeFalseMap(){
+			var map = new Array(height);
+			for (y=0;y<height;y++){
+				map[y] = new Array(width);
+			}
+			for (y=0;y<height;y++){
+				for (x=0;x<width;x++){
+					map[y][x] = false;
+				}
+			}
+			return map;
+		}
+
+		function makeZeroMap(){
+			var map = new Array(height);
+			for (y=0;y<height;y++){
+				map[y] = new Array(width);
+			}
+			for (y=0;y<height;y++){
+				for (x=0;x<width;x++){
+					map[y][x] = 0;
+				}
+			}
+			return map;
+		}
+
+
+		function makeBombMap(sY, sX){
+			var map = makeFalseMap();
+			/*
+			for (y=0;y<height;y++){
+				for (x=0; x<width; x++){
+					if (x<=sX+2 && x>=sX-2 && y<=sY+2 && y>=sY-2){
+						map[y][x] = false;
+					}
+					else {
+						if (Math.floor((Math.random() * bombScarcity)) == 0){
+							map[y][x] = true;
+						}
+						else {
+							map[y][x] = false;
+						}
+					}
+
+				}
+			}
+			*/
+			for (b=0; b<bombs; b++){
+				var y = Math.floor((Math.random() * height));
+				var x = Math.floor((Math.random() * width));
+				var n=3;
+				xc = x - sX;
+				yc = y - sY;
+				if (map[y][x]||Math.abs(xc)+Math.abs(yc)<=n){
+					b--;
+				}
+				/*
+				if (map[y][x]||(x<=sX+2 && x>=sX-2 && y<=sY+2 && y>=sY-2)){
+					
+				}
+				*/
+				else {
+					map[y][x] = true;
+				}
+
+			}
+			return map;
+		}
+
+		function makeBaseMap(){
+			var map = new Array(height);
+			for (y=0;y<height;y++){
+				map[y] = new Array(width);
+			}
+			for (y=0;y<height;y++){
+				for (x=0; x<width; x++){
+					switch(bombMap[y][x]){
+						case true:
+							map[y][x] = "X";
+							break;
+						case false:
+							var touching = 0;
+							for (yc=-1;yc<2;yc++){
+								for (xc=-1;xc<2;xc++){
+									if ((yc!=0||xc!=0) && y+yc<height && y+yc>=0 && x+xc<width && x+xc>=0){
+										if (bombMap[y+yc][x+xc]){
+											touching++;
+										}
+									}
+								}
+							}
+							map[y][x] = touching;
+					}
+
+				}
+			}
+			return map;
+		}
+
+		function makeOpenMap(){
+			var map = new Array(height);
+			for (y=0; y<height; y++){
+				map[y] = new Array(width);
+			}
+			for (y=0; y<height; y++){
+				for (x=0; x<width; x++){
+					map[y][x] = "H";
+				}
+			}
+			return map;
+		}
+
+		//WASD and ArrowKEys
+		function keyPush(e){
+			switch (e){
+				case 37: //Left Arrow Key
+				case 65: //A Key
+					break;
+				case 38: //Up Arrow Key
+				case 87: //W Key
+					break;
+				case 39: //Right Arrow Key
+				case 68: //D Key
+					break;
+				case 40: //Down Arrow Key
+				case 83: //S Key
+					break;
+			}
+		}
+
+		function drawImage(imgName,xPos,yPos){
+			var img = images[imgName];
+			ctx.drawImage(img,xPos,yPos);
+		}
+
+		function playSound(sndName){
+			var snd = new Audio();
+			snd.src = sounds[sndName];
+			snd.volume = 0.1;
+			snd.play();
+		}
+
+		function clickCanvas(e){
+			xClick = Math.ceil(mouseX/20 - .45) - 1;
+  			yClick = Math.ceil(mouseY/20 - .45) - 3;
+  			if (yClick>-1){
+  				tileClicked = true;
+  				
+  			}
+  			else if (xClick>37) {
+  				restart();
+  			}
+  			else if (xClick>35){
+  				muted =! muted;
+  			}
+  		}
+
+		function rightClickCanvas(e){
+			xClick = Math.ceil(mouseX/20 - .45) - 1;
+  			yClick = Math.ceil(mouseY/20 - .45) - 3;
+  			if (yClick>-1){
+  				tileFlagged = true;
+  				
+  			}
+  			mouseDown = false;
+  		}
+
+  		function downCanvas(e){
+  			mouseDown = true;
+  		}
+
+  		function upCanvas(e){
+  			clickedMap = makeFalseMap();
+  			mouseDown = false;
+  		}
+
+  		function moveCanvas(e){
+  			/*
+			if (e.pageX || e.pageY) { 
+  				mouseX = e.pageX;
+  				mouseY = e.pageY;
+			}				
+			else { 
+				mouseX = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft; 
+				mouseY = e.clientY + document.body.scrollTop + document.documentElement.scrollTop; 
+			} 
+			x -= gCanvasElement.offsetLeft;
+			y -= gCanvasElement.offsetTop;
+			*/
+		    if(e.offsetX) {
+		        mouseX = e.offsetX;
+		        mouseY = e.offsetY;
+		    }
+		    else if(e.layerX) {
+		        mouseX = e.layerX;
+		        mouseY = e.layerY;
+		    }
+		    mouseX+=10;
+		    mouseY+=10;
+
+  		}
+
+  		/*
+  		function getPosition(el) {
+			var xPosition = 0;
+			var yPosition = 0;
+			while (el) {
+				if (el.tagName == "BODY") {
+					// deal with browser quirks with body/window/document and page scroll
+					var xScrollPos = el.scrollLeft || document.documentElement.scrollLeft;
+					var yScrollPos = el.scrollTop || document.documentElement.scrollTop;
+					xPosition += (el.offsetLeft - xScrollPos + el.clientLeft);
+					yPosition += (el.offsetTop - yScrollPos + el.clientTop);
+				} 
+				else {
+					xPosition += (el.offsetLeft - el.scrollLeft + el.clientLeft);
+					yPosition += (el.offsetTop - el.scrollTop + el.clientTop);
+				}
+				el = el.offsetParent;
+			}
+			var cords = [xPosition,yPosition];
+			return cords;
+		}
+		*/
+  		function mouseIsDown(){
+			clickedMap = makeFalseMap();
+			xClick = Math.ceil(mouseX/20 - .45) - 1;
+  			yClick = Math.ceil(mouseY/20 - .45) - 3;
+  			if (yClick>-1){
+  				if (openMap[yClick][xClick]=="H"&&!gameOver){
+  					clickedMap[yClick][xClick] = true;
+  				}
+  			}
+  		}
+
+
+		function revealBlock(yPos,xPos){
+			openMap[yPos][xPos] = baseMap[yPos][xPos];
+			clickedMap[yPos][xPos] = false;
+			breakingMap[yPos][xPos] = 1;
+			if (openMap[yPos][xPos]==0){
+				revealSurrounding(yPos,xPos);
+				return true;
+			}
+			else if (openMap[yPos][xPos]=="X"){
+				gameOverSequence(yPos,xPos);
+				return false
+			}
+			else {
+				return false;
+			}
+		}
+
+		function revealBlockEnd(yPos,xPos){
+			if (openMap[yPos][xPos]=="FF"){
+				openMap[yPos][xPos] = "RFF";
+			}
+			else if (openMap[y][x]=="F"){
+				openMap[yPos][xPos] = "DF";
+			}
+			else if (baseMap[y][x]=="X"){
+				openMap[yPos][xPos] = "X";
+			}
+			else {
+				openMap[y][x] = 0;
+			}
+			breakingMap[yPos][xPos] = 1;
+
+		}
+
+		function revealSurrounding(yPos,xPos){
+			for (xc=-1; xc<2; xc++){
+				for (yc=-1; yc<2; yc++){
+					if ((yc!=0||xc!=0) && (xc+xPos)>=0 && (xc+xPos)<width && (yc+yPos)>=0 && (yc+yPos)<height){
+						if (openMap[yPos+yc][xPos+xc]=="H"){
+							openMap[yPos+yc][xPos+xc] = baseMap[yPos+yc][xPos+xc];
+							breakingMap[yPos+yc][xPos+xc] = 1;
+						}
+					}
+				}
+			}
+		}
+
+		function drawMenu(){
+			for (y=-2;y<0;y++){
+				for (x=22;x<36;x++){
+					drawTile("0",x,y);
+				}
+			}
+			//drawTile(0,32,-2);
+			//drawTile(0,32,-1);
+			/*
+			if (!muted){
+				drawImage("sound",720,0);
+			}
+			else {
+				drawImage("mute",720,0);
+			}
+			*/
+			drawClock();
+			drawFlagCount();
+		}
+
+		function drawTile(tileName,x,y){
+			drawImage(tileName,x*20,(y+2)*20);
+		}
+
+		function makeClock(){
+			var d = new Date();
+			var time = d.getSeconds() + (60*d.getMinutes()) + (3600*d.getHours());
+			var seconds = time - origTime;
+			var digits = {}
+			if (seconds<3600){
+				digits[0] = seconds % 10;
+				digits[1] = (seconds%60 - digits[0])/10;
+				digits[2] = (seconds%600 - seconds%60)/60;
+				digits[3] = (seconds - seconds%600)/600;
+			}
+			else {
+				digits[0] = 0;
+				digits[1] = 0;
+				digits[2] = 0;
+				digits[3] = 6;
+			}
+			for (i=0;i<4;i++){
+				if (digits[i]==0){
+					digits[i] = "O";
+				} 
+			}
+			clockDigits = digits;
+			
+		}
+
+		function drawClock(){
+			drawTile(clockDigits[0],37,-2);
+			drawTile(clockDigits[1],36,-2);
+			drawTile(":",35,-2);
+			drawTile(clockDigits[2],34,-2);
+			drawTile(clockDigits[3],33,-2);
+		}
+
+		function drawFlagCount(){
+			drawTile("DF",33,-1); 
+			drawTile(".",34,-1);
+			var digits = {};
+			digits[0] = (flags-flags%100)/100;
+			digits[1] = (flags%100-flags%10)/10;
+			digits[2] = flags%10;
+			for (i=0; i<3; i++){
+				if (digits[i]==0){
+					digits[i]="O";
+				}
+			}
+			drawTile(digits[0],35,-1);
+			drawTile(digits[1],36,-1);
+			drawTile(digits[2],37,-1);
+		}
+
+		function revealEntireMap(){
+			for (y=0;y<height;y++){
+				for (x=0; x<width; x++){
+					if (openMap[y][x]=="H"){
+						revealBlock(y,x);
+						breakingMap[y][x] = 1;
+					}
+				}
+			}
+		}
+
+		function gameOverSequence(y,x){
+			gameOver = true;
+			for (n=0; n<49; n++){
+				explosion2(y,x,n);
+			}
+
+		}
+
+		function explosion(yI,xI,n){
+			for (y=yI-n;y<=yI+n;y++){
+				if (y<height&&y>=0){
+					for (x=xI-n;x<=xI+n;x++){
+						if (((x!=xI-n&&x!=xI+n)||(y!=yI-n&&y!=yI+n))&&(x<width&&x>=0)){
+							if (breakingMap[y][x]==0&&openMap[y][x]=="H"){
+								breakingMap[y][x] = 2*(0-n);
+							}
+						}
+					}
+				}
+
+			}
+		}
+
+		function explosion2(yI,xI,n){
+			for (y=0-n;y<=0+n;y++){
+				if (y+yI<height&&y+yI>=0){
+					for (x=0-n;x<=0+n;x++){
+						if (Math.pow(y,2)+Math.pow(x,2)<Math.pow(n,2)&&x+xI<width&&x+xI>=0){
+							if (breakingMap[y+yI][x+xI]==0&&(openMap[y+yI][x+xI]=="H"||openMap[y+yI][x+xI]=="FF"|openMap[y+yI][x+xI]=="F")){
+								breakingMap[y+yI][x+xI] = 3*(0-n);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		function recheckFlags(){
+			for (y=0; y<height; y++){
+				for (x=0; x<width; x++){
+					if (openMap[y][x]=="FF"&&baseMap[y][x]=="X"){
+						openMap[y][x]="F";
+					}
+				}
+			}
+		}
+
+		function gameWonSequence(){
+			for (y=0; y<height; y++){
+				for (x=0; x<width; x++){
+					if (openMap[y][x]=="F"){
+						greenflaggingMap[y][x] = 1; 
+					}
+				}
+			}
+		}
+
+		function restart(){
+			flags = bombs;
+			clockDigits = ["O","O","O","O"];
+			gameOver = false;
+			gameWon = false;
+
+			date = new Date();
+			origTime = date.getSeconds() + (60*date.getMinutes()) + (3600*date.getHours());
+			mapCreated = false;
+			bombMap = makeFalseMap();
+			baseMap = makeBaseMap();
+			openMap = makeOpenMap();
+			breakingMap = makeZeroMap();
+			flaggingMap = makeZeroMap();
+			deflaggingMap = makeZeroMap();
+			clickedMap = makeFalseMap();
+			greenflaggingMap = makeZeroMap();
+		}
+
+		</script>
+	</body>
+</html> 
